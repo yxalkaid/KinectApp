@@ -1,4 +1,5 @@
-﻿using OpenCvSharp;
+﻿using Microsoft.Kinect;
+using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace KinectApp
 {
@@ -27,6 +29,11 @@ namespace KinectApp
         private AudioCapturer audioCapturer;
 
         /// <summary>
+        /// 骨骼数据采集器
+        /// </summary>
+        private BodyCapturer bodyCapturer;
+
+        /// <summary>
         /// 视频保存器
         /// </summary>
         private VideoSaver videoSaver;
@@ -36,12 +43,19 @@ namespace KinectApp
         /// </summary>
         private AudioSaver audioSaver;
 
+        /// <summary>
+        /// 骨骼数据保存器
+        /// </summary>
+        private BodySaver bodySaver;
+
         public MainForm()
         {
             InitializeComponent();
 
             InitializeVideoCapturer();
             InitializeAudioCapturer();
+            InitializeBodyCapturer();
+
         }
 
 
@@ -75,7 +89,12 @@ namespace KinectApp
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             // 释放资源
+            videoSaver?.Dispose();
             videoCapturer?.Dispose();
+
+            // 释放资源
+            audioSaver?.Dispose();
+            audioCapturer?.Dispose();
 
             // 调用基类方法
             base.OnFormClosed(e);
@@ -87,6 +106,7 @@ namespace KinectApp
             {
                 this.StartVideoSaver();
                 this.StartAudioSaver();
+                this.StartBodySaver();
 
                 DialogResult result = MessageBox.Show(
                     "已开始录制",
@@ -112,6 +132,7 @@ namespace KinectApp
             {
                 this.StopVideoSaver();
                 this.StopAudioSaver();
+                this.StopBodySaver();
 
                 DialogResult result = MessageBox.Show(
                     "已停止录制",
@@ -130,5 +151,65 @@ namespace KinectApp
                 );
             }
         }
+
+        /// <summary>
+        /// 处理视频帧
+        /// </summary>
+        /// <param name="frame"></param>
+        private void HandleVideoFrame(Bitmap image)
+        {
+
+            var oldImage = pictureBox.Image;
+
+            // 安全更新PictureBox
+            if (pictureBox.InvokeRequired)
+            {
+                pictureBox.Invoke(new Action(() => pictureBox.Image = image));
+            }
+            else
+            {
+                pictureBox.Image = image;
+            }
+
+            if (oldImage != null && oldImage != image)
+            {
+                oldImage.Dispose();
+                oldImage = null;
+            }
+        }
+
+        private void HandleBodyFrame(Microsoft.Kinect.Body[] bodies)
+        {
+
+            var headJoint = bodies[0].Joints[JointType.Head];
+
+            //// 创建位图（如果尚未创建）
+            //if (pictureBox.Image == null)
+            //{
+            //    pictureBox.Image = new Bitmap(pictureBox.Width, pictureBox.Height);
+            //}
+
+            //using (Graphics g = Graphics.FromImage(pictureBox.Image))
+            //{
+            //    // 清除之前的绘制
+            //    g.Clear(Color.Black);
+
+            //    // 绘制红色圆点（头部位置）
+            //    int radius = 10;
+            //    Rectangle rect = new Rectangle(
+            //        (int)(colorPoint.X - radius),
+            //        (int)(colorPoint.Y - radius),
+            //        radius * 2,
+            //        radius * 2
+            //    );
+
+            //    g.FillEllipse(Brushes.Red, rect);
+            //}
+
+            //// 刷新 PictureBox
+            //pictureBox.Refresh();
+        }
+
+
     }
 }

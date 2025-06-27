@@ -4,11 +4,27 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace KinectApp
 {
     partial class MainForm
     {
+        /// <summary>
+        /// 视频保存目录
+        /// </summary>
+        private string videoDir = "D:/Downloads/Kinect";
+
+        /// <summary>
+        /// 音频保存目录
+        /// </summary>
+        private string audioDir="D:/Downloads/Kinect";
+
+        /// <summary>
+        /// 骨骼数据保存目录
+        /// </summary>
+        private string bodyDir="D:/Downloads/Kinect";
+
         private void InitializeVideoCapturer()
         {
             videoCapturer = new VideoCapturer();
@@ -25,6 +41,14 @@ namespace KinectApp
             audioCapturer.Start();
         }
 
+        private void InitializeBodyCapturer()
+        {
+            bodyCapturer = new BodyCapturer();
+            bodyCapturer.FrameArrived += HandleBodyFrame;
+            bodyCapturer.Initialize();
+            bodyCapturer.Start();
+        }
+
         /// <summary>
         /// 开始视频录制
         /// </summary>
@@ -36,8 +60,13 @@ namespace KinectApp
                 return false;
             }
 
+            if (videoSaver != null)
+            {
+                return false;
+            }
+
             videoSaver = new VideoSaver(
-                "D:/Downloads/Kinect",
+                videoDir,
                 1920, 1080
             );
             videoCapturer.FrameArrived += videoSaver.WriteFrame;
@@ -76,8 +105,13 @@ namespace KinectApp
                 return false;
             }
 
+            if (audioSaver != null)
+            {
+                return false;
+            }
+
             audioSaver = new AudioSaver(
-                "D:/Downloads/Kinect"
+                audioDir
             );
             audioCapturer.FrameArrived += audioSaver.WriteFrame;
             audioSaver.Start();
@@ -104,29 +138,45 @@ namespace KinectApp
         }
 
         /// <summary>
-        /// 处理视频帧
+        /// 开始骨骼数据录制
         /// </summary>
-        /// <param name="frame"></param>
-        private void HandleVideoFrame(Bitmap image)
+        private bool StartBodySaver()
         {
-
-            var oldImage = pictureBox.Image;
-
-            // 安全更新PictureBox
-            if (pictureBox.InvokeRequired)
+            if (bodyCapturer == null)
             {
-                pictureBox.Invoke(new Action(() => pictureBox.Image = image));
-            }
-            else
-            {
-                pictureBox.Image = image;
+                return false;
             }
 
-            if (oldImage != null && oldImage != image)
+            if (bodySaver != null)
             {
-                oldImage.Dispose();
-                oldImage = null;
+                return true;
             }
+
+            bodySaver = new BodySaver(
+                bodyDir
+            );
+            bodyCapturer.FrameArrived += bodySaver.WriteFrame;
+            bodySaver.Start();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 停止骨骼数据录制
+        /// </summary>
+        /// <returns></returns>
+        private bool StopBodySaver()
+        {
+            if (bodySaver == null)
+            {
+                return false;
+            }
+
+            bodySaver.Dispose();
+            bodyCapturer.FrameArrived -= bodySaver.WriteFrame;
+            bodySaver = null;
+
+            return true;
         }
     }
 }

@@ -62,6 +62,9 @@ namespace KinectApp
         /// </summary>
         public void WriteFrame(byte[] frame,uint frameLength)
         {
+            if (!IsRecording)
+                return;
+
             float[] floatSamples = new float[frameLength / 4];
             Buffer.BlockCopy(frame, 0, floatSamples, 0, (int)frameLength);
 

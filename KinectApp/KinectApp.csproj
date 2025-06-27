@@ -108,6 +108,8 @@
     <Compile Include="AudioCapturer.cs" />
     <Compile Include="AudioSaver.cs" />
     <Compile Include="BaseCapturer.cs" />
+    <Compile Include="BodyCapturer.cs" />
+    <Compile Include="BodySaver.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

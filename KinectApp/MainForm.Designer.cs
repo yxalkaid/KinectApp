@@ -39,6 +39,7 @@
             this.pictureBox.Image = global::KinectApp.Properties.Resources.example;
             this.pictureBox.InitialImage = null;
             this.pictureBox.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox.Margin = new System.Windows.Forms.Padding(8);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(1280, 720);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -47,9 +48,9 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(160, 775);
+            this.startButton.Location = new System.Drawing.Point(12, 731);
             this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(75, 23);
+            this.startButton.Size = new System.Drawing.Size(80, 60);
             this.startButton.TabIndex = 1;
             this.startButton.Text = "start";
             this.startButton.UseVisualStyleBackColor = true;
@@ -57,9 +58,9 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(316, 775);
+            this.stopButton.Location = new System.Drawing.Point(98, 731);
             this.stopButton.Name = "stopButton";
-            this.stopButton.Size = new System.Drawing.Size(75, 23);
+            this.stopButton.Size = new System.Drawing.Size(80, 60);
             this.stopButton.TabIndex = 2;
             this.stopButton.Text = "stop";
             this.stopButton.UseVisualStyleBackColor = true;
@@ -69,7 +70,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1422, 853);
+            this.ClientSize = new System.Drawing.Size(1280, 853);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.pictureBox);
