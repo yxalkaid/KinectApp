@@ -13,17 +13,17 @@ namespace KinectApp
         /// <summary>
         /// 视频保存目录
         /// </summary>
-        private string videoDir = "D:/Downloads/Kinect";
+        private string videoDir = "D:/Kinect";
 
         /// <summary>
         /// 音频保存目录
         /// </summary>
-        private string audioDir="D:/Downloads/Kinect";
+        private string audioDir="D:/Kinect";
 
         /// <summary>
         /// 骨骼数据保存目录
         /// </summary>
-        private string bodyDir="D:/Downloads/Kinect";
+        private string bodyDir="D:/Kinect";
 
         private void InitializeVideoCapturer()
         {
@@ -44,7 +44,7 @@ namespace KinectApp
         private void InitializeBodyCapturer()
         {
             bodyCapturer = new BodyCapturer();
-            bodyCapturer.FrameArrived += HandleBodyFrame;
+            bodyCapturer.FilteredFrameArrived += HandleBodyFrame;
             bodyCapturer.Initialize();
             bodyCapturer.Start();
         }
@@ -155,7 +155,7 @@ namespace KinectApp
             bodySaver = new BodySaver(
                 bodyDir
             );
-            bodyCapturer.FrameArrived += bodySaver.WriteFrame;
+            bodyCapturer.FilteredFrameArrived += bodySaver.WriteFrame;
             bodySaver.Start();
 
             return true;
@@ -173,7 +173,7 @@ namespace KinectApp
             }
 
             bodySaver.Dispose();
-            bodyCapturer.FrameArrived -= bodySaver.WriteFrame;
+            bodyCapturer.FilteredFrameArrived -= bodySaver.WriteFrame;
             bodySaver = null;
 
             return true;

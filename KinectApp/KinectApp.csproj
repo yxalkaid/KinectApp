@@ -110,6 +110,7 @@
     <Compile Include="BaseCapturer.cs" />
     <Compile Include="BodyCapturer.cs" />
     <Compile Include="BodySaver.cs" />
+    <Compile Include="FilteredBody.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

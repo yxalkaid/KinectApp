@@ -108,12 +108,12 @@ namespace KinectApp
                 this.StartAudioSaver();
                 this.StartBodySaver();
 
-                DialogResult result = MessageBox.Show(
+               /* DialogResult result = MessageBox.Show(
                     "已开始录制",
                     "确认",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
-                );
+                );*/
             }
             else
             {
@@ -178,10 +178,10 @@ namespace KinectApp
             }
         }
 
-        private void HandleBodyFrame(Microsoft.Kinect.Body[] bodies)
+        private void HandleBodyFrame(List<FilteredBody> filteredBodies)
         {
 
-            var headJoint = bodies[0].Joints[JointType.Head];
+            //var headJoint = filteredBodies[0].Joints[JointType.Head];
 
             //// 创建位图（如果尚未创建）
             //if (pictureBox.Image == null)
