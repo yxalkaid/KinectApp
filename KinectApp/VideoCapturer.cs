@@ -7,7 +7,7 @@ namespace KinectApp
     /// <summary>
     /// kinect 视频采集器
     /// </summary>
-    public class VideoCapturer : BaseCapturer
+    public class VideoCapturer : KinectCapturer
     {
         /// <summary>
         /// 视频帧到达事件
@@ -81,6 +81,8 @@ namespace KinectApp
                             (uint)(colorBitmap.Width * colorBitmap.Height * 4),
                             ColorImageFormat.Bgra
                         );
+
+                        colorBitmap.RotateFlip(RotateFlipType.RotateNoneFlipX);
 
                         // 触发帧到达事件
                         FrameArrived?.Invoke((Bitmap)colorBitmap.Clone());

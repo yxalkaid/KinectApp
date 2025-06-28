@@ -6,7 +6,7 @@ namespace KinectApp
     /// <summary>
     /// kinect 数据采集基类
     /// </summary>
-    public abstract class BaseCapturer : IDisposable
+    public abstract class KinectCapturer : IDisposable
     {
         /// <summary>
         /// 采集状态
@@ -29,7 +29,7 @@ namespace KinectApp
         protected KinectSensor Sensor { get; private set; }
 
         /// <summary>
-        /// 初始化传感器
+        /// 初始化
         /// </summary>
         public virtual void Initialize()
         {

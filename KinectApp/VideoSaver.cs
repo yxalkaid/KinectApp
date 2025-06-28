@@ -56,13 +56,13 @@ namespace KinectApp
             }
 
             // 生成文件路径
-            this.FilePath = Path.Combine(parentDir, $"kinect_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+            this.FilePath = Path.Combine(parentDir, $"video_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
 
             // 初始化视频写入器
             this.targetSize = new OpenCvSharp.Size(width, height);
             this.videoWriter = new VideoWriter(
                 this.FilePath,
-                FourCC.XVID,
+                FourCC.MP4V,
                 fps,
                 this.targetSize,
                 true

@@ -12,10 +12,29 @@ namespace KinectApp
     /// </summary>
     public class BodySaver : IDisposable
     {
+        /// <summary>
+        /// 骨骼数据写入器
+        /// </summary>
         private StreamWriter bodyWriter;
+
+        /// <summary>
+        /// 是否正在录制
+        /// </summary>
         public bool IsRecording { get; private set; }
+
+        /// <summary>
+        /// 文件保存路径
+        /// </summary>
         public string FilePath { get; private set; }
+
+        /// <summary>
+        /// 录制开始事件
+        /// </summary>
         public event Action RecordingStarted;
+
+        /// <summary>
+        /// 录制停止事件
+        /// </summary>
         public event Action RecordingStopped;
 
         /// <summary>
@@ -37,7 +56,7 @@ namespace KinectApp
                 Directory.CreateDirectory(parentDir);
             }
 
-            this.FilePath = Path.Combine(parentDir, $"kinect_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            this.FilePath = Path.Combine(parentDir, $"body_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
 
             FileStream fileStream = new FileStream(FilePath, FileMode.CreateNew, FileAccess.Write);
             this.bodyWriter = new StreamWriter(fileStream) { AutoFlush = false };
@@ -47,12 +66,12 @@ namespace KinectApp
                 throw new IOException("无法打开骨骼数据写入器，可能权限不足或路径无效。");
             }
 
-            // (新) 写入CSV文件的表头
+            // 写入CSV文件的表头
             WriteHeader();
         }
 
         /// <summary>
-        /// (新) 写入CSV文件的表头
+        /// 写入CSV文件的表头
         /// </summary>
         private void WriteHeader()
         {
