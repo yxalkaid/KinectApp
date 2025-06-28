@@ -8,7 +8,7 @@ namespace KinectApp
     /// <summary>
     /// kinect 音频采集器
     /// </summary>
-    public class AudioCapturer : BaseCapturer
+    public class AudioCapturer : KinectCapturer
     {
         /// <summary>
         /// 音频帧到达事件
