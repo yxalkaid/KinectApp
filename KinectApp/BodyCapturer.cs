@@ -2,37 +2,59 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace KinectApp
 {
     /// <summary>
-    /// kinect 骨骼数据采集器
+    /// Kinect 骨骼数据采集器
     /// </summary>
-    public class BodyCapturer : BaseCapturer
+    public class BodyCapturer : KinectCapturer
     {
 
         /// <summary>
-        /// 骨骼数据帧到达事件
-        /// </summary>
-        public event Action<Body[]> FrameArrived;
-
-        /// <summary>
-        /// 骨骼数据帧捕获
+        /// 骨骼数据捕获
         /// </summary>
         private BodyFrameReader bodyReader;
 
+        /// <summary>
+        /// (已修改) 只包含指定关节的过滤后骨骼数据帧到达事件
+        /// </summary>
+        public event Action<List<FilteredBody>> FrameArrived;
+
+        /// <summary>
+        /// 坐标映射器
+        /// </summary>
+        private CoordinateMapper coordinateMapper;
+
+        /// <summary>
+        /// 我们希望追踪的关节点列表
+        /// </summary>
+        private readonly List<JointType> _requiredJoints = new List<JointType>
+        {
+            JointType.SpineBase,
+            JointType.Neck,
+            JointType.HipLeft,
+            JointType.KneeLeft,
+            JointType.HipRight,
+            JointType.KneeRight,
+            JointType.ShoulderLeft,
+            JointType.ElbowLeft,
+            JointType.WristLeft,
+            JointType.ShoulderRight,
+            JointType.ElbowRight,
+            JointType.WristRight
+        };
+        
         /// <summary>
         /// 初始化
         /// </summary>
         public override void Initialize()
         {
             base.Initialize();
-
             try
             {
+                coordinateMapper = Sensor.CoordinateMapper;
                 bodyReader = Sensor.BodyFrameSource.OpenReader();
                 bodyReader.FrameArrived += OnBodyFrameArrived;
             }
@@ -53,15 +75,44 @@ namespace KinectApp
             {
                 if (frame == null) return;
 
-                // 获取骨骼数据数组
                 Body[] bodies = new Body[frame.BodyCount];
                 frame.GetAndRefreshBodyData(bodies);
 
-                // 触发事件
-                FrameArrived?.Invoke(bodies);
+
+                var filteredBodies = new List<FilteredBody>();
+
+                foreach (var body in bodies)
+                {
+                    if (body != null && body.IsTracked)
+                    {
+                        var filteredBody = new FilteredBody
+                        {
+                            TrackingId = body.TrackingId,
+                            Timestamp = DateTime.Now
+                        }; 
+
+                        foreach (var jointType in _requiredJoints)
+                        {
+                            filteredBody.Joints[jointType] = body.Joints[jointType];
+
+                            //Joint originalJoint = body.Joints[jointType];
+                            //CameraSpacePoint cameraPoint = originalJoint.Position;
+                            //ColorSpacePoint colorPoint = coordinateMapper.MapCameraPointToColorSpace(cameraPoint);
+                            //originalJoint.Position.X = colorPoint.X;
+                            //originalJoint.Position.Y = colorPoint.Y;
+                            //originalJoint.Position.Z = 0;
+                            //filteredBody.Joints[jointType] = originalJoint;
+                        }
+                        filteredBodies.Add(filteredBody);
+                    }
+                }
+                
+                if (filteredBodies.Any())
+                {
+                    FrameArrived?.Invoke(filteredBodies);
+                }
             }
         }
-
 
         /// <summary>
         /// 释放资源
@@ -74,7 +125,6 @@ namespace KinectApp
                 bodyReader.Dispose();
                 bodyReader = null;
             }
-
             base.Dispose();
         }
     }

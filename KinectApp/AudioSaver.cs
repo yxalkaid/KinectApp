@@ -46,7 +46,7 @@ namespace KinectApp
             }
 
             // 生成文件路径
-            this.FilePath = Path.Combine(parentDir, $"kinect_{DateTime.Now:yyyyMMdd_HHmmss}.wav");
+            this.FilePath = Path.Combine(parentDir, $"audio_{DateTime.Now:yyyyMMdd_HHmmss}.wav");
 
             // 初始化音频写入器
             var waveFormat = new WaveFormat(16000, 16, 1); // 16kHz, 16-bit, mono

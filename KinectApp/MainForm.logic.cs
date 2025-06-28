@@ -18,35 +18,74 @@ namespace KinectApp
         /// <summary>
         /// 音频保存目录
         /// </summary>
-        private string audioDir="D:/Downloads/Kinect";
+        private string audioDir= "D:/Downloads/Kinect";
 
         /// <summary>
         /// 骨骼数据保存目录
         /// </summary>
-        private string bodyDir="D:/Downloads/Kinect";
+        private string bodyDir= "D:/Downloads/Kinect";
 
+        /// <summary>
+        /// RFID 数据保存目录
+        /// </summary>
+        private string rfidDir= "D:/Downloads/Kinect";
+
+        /// <summary>
+        /// 初始化视频采集器
+        /// </summary>
         private void InitializeVideoCapturer()
         {
-            videoCapturer = new VideoCapturer();
-            videoCapturer.FrameArrived += HandleVideoFrame;
-            videoCapturer.Initialize();
-            videoCapturer.Start();
+            if (videoCapturer == null)
+            {
+                videoCapturer = new VideoCapturer();
+                videoCapturer.FrameArrived += HandleVideoFrame;
+                videoCapturer.Initialize();
+                videoCapturer.Start();
+            }
         }
 
+        /// <summary>
+        /// 初始化音频采集器
+        /// </summary>
         private void InitializeAudioCapturer()
         {
-            audioCapturer = new AudioCapturer();
-            //audioCapturer.AudioFrameArrived += HandleAudioFrame;
-            audioCapturer.Initialize();
-            audioCapturer.Start();
+            if (audioCapturer == null)
+            {
+                audioCapturer = new AudioCapturer();
+                //audioCapturer.FrameArrived += HandleAudioFrame;
+                audioCapturer.Initialize();
+                audioCapturer.Start();
+            }
         }
 
+        /// <summary>
+        /// 初始化骨骼数据检测器
+        /// </summary>
         private void InitializeBodyCapturer()
         {
-            bodyCapturer = new BodyCapturer();
-            bodyCapturer.FrameArrived += HandleBodyFrame;
-            bodyCapturer.Initialize();
-            bodyCapturer.Start();
+            if(bodyCapturer == null)
+            {
+                bodyCapturer = new BodyCapturer();
+                bodyCapturer.FrameArrived += HandleBodyFrame;
+                bodyCapturer.Initialize();
+                bodyCapturer.Start();
+            }
+        }
+
+        /// <summary>
+        /// 初始化RFID数据获取器
+        /// </summary>
+        private void InitializeRFIDCapturer()
+        {
+            if (rfidCapturer == null)
+            {
+                rfidCapturer = new RFIDCapturer(
+                    "Speedwayr-11-25-ab.local"
+                );
+                //rfidCapturer.FrameArrived += HandleRFIDFrame;
+                rfidCapturer.Initialize();
+                //rfidCapturer.Start();
+            }
         }
 
         /// <summary>
@@ -149,7 +188,7 @@ namespace KinectApp
 
             if (bodySaver != null)
             {
-                return true;
+                return false;
             }
 
             bodySaver = new BodySaver(
@@ -175,6 +214,51 @@ namespace KinectApp
             bodySaver.Dispose();
             bodyCapturer.FrameArrived -= bodySaver.WriteFrame;
             bodySaver = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 开始RFID数据录制
+        /// </summary>
+        /// <returns></returns>
+        private bool StartRFIDSaver()
+        { 
+            if(rfidCapturer == null)
+            {
+                return false;
+            }
+
+            if(rfidSaver != null)
+            { 
+                return false;
+            }
+
+            rfidSaver = new RFIDSaver(
+                rfidDir
+            );
+            rfidCapturer.FrameArrived += rfidSaver.WriteFrame;
+            rfidCapturer.Start();
+            rfidSaver.Start();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 停止RFID数据录制
+        /// </summary>
+        /// <returns></returns>
+        private bool StopRFIDSaver()
+        {
+            if (rfidSaver == null)
+            {
+                return false;
+            }
+
+            rfidSaver.Dispose();
+            rfidCapturer.Stop();
+            rfidCapturer.FrameArrived -= rfidSaver.WriteFrame;
+            rfidSaver = null;
 
             return true;
         }

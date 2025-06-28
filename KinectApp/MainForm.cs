@@ -1,15 +1,7 @@
-﻿using Microsoft.Kinect;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace KinectApp
 {
@@ -18,6 +10,16 @@ namespace KinectApp
     /// </summary>
     public partial class MainForm: Form
     {
+        /// <summary>
+        /// 是否正在录制
+        /// </summary>
+        private bool IsRecording=false;
+
+        /// <summary>
+        /// 是否已连接
+        /// </summary>
+        private bool IsConnected=false;
+
         /// <summary>
         /// 视频采集器
         /// </summary>
@@ -34,6 +36,11 @@ namespace KinectApp
         private BodyCapturer bodyCapturer;
 
         /// <summary>
+        /// RFID数据采集器
+        /// </summary>
+        private RFIDCapturer rfidCapturer;
+
+        /// <summary>
         /// 视频保存器
         /// </summary>
         private VideoSaver videoSaver;
@@ -48,13 +55,14 @@ namespace KinectApp
         /// </summary>
         private BodySaver bodySaver;
 
+        /// <summary>
+        /// RFID 数据保存器
+        /// </summary>
+        private RFIDSaver rfidSaver;
+
         public MainForm()
         {
             InitializeComponent();
-
-            InitializeVideoCapturer();
-            InitializeAudioCapturer();
-            InitializeBodyCapturer();
 
         }
 
@@ -89,67 +97,91 @@ namespace KinectApp
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             // 释放资源
-            videoSaver?.Dispose();
-            videoCapturer?.Dispose();
-
-            // 释放资源
-            audioSaver?.Dispose();
-            audioCapturer?.Dispose();
+            this.DisposeAll();
 
             // 调用基类方法
             base.OnFormClosed(e);
         }
 
+        private void DisposeAll()
+        {
+            // 释放视频采集资源
+            videoSaver?.Dispose();
+            videoSaver = null;
+            videoCapturer?.Dispose();
+            videoCapturer = null;
+
+            // 释放音频采集资源
+            audioSaver?.Dispose();
+            audioSaver = null;
+            audioCapturer?.Dispose();
+            audioCapturer = null;
+
+            // 释放骨骼数据采集资源
+            bodySaver?.Dispose();
+            bodySaver = null;
+            bodyCapturer?.Dispose();
+            bodyCapturer = null;
+
+            // 释放RFID数据采集资源
+            rfidSaver?.Dispose();
+            rfidSaver = null;
+            rfidCapturer?.Dispose();
+            rfidCapturer = null;
+        }
+
+        private void initButton_Click(object sender, EventArgs e)
+        {
+            if (this.IsConnected == false)
+            {
+                this.InitializeVideoCapturer();
+                this.InitializeAudioCapturer();
+                this.InitializeBodyCapturer();
+                //this.InitializeRFIDCapturer();
+            }
+            else
+            {
+                this.DisposeAll();
+            }
+
+            this.IsConnected = !this.IsConnected;
+            this.initButton.Text = this.IsConnected ? "Disconnect" : "Connect";
+            string info = this.IsConnected ? "已连接设备" : "已断开连接";
+            DialogResult result = MessageBox.Show(
+                info,
+                "确认",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
         private void startButton_Click(object sender, EventArgs e)
         {
-            if (this.videoSaver == null)
+            if (this.IsRecording == false)
             {
                 this.StartVideoSaver();
                 this.StartAudioSaver();
                 this.StartBodySaver();
-
-                DialogResult result = MessageBox.Show(
-                    "已开始录制",
-                    "确认",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
+                this.StartRFIDSaver();
             }
             else
-            {
-                DialogResult result = MessageBox.Show(
-                    "正在录制中",
-                    "确认",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-            }
-        }
-
-        private void stopButton_Click(object sender, EventArgs e)
-        {
-            if (this.videoSaver != null)
             {
                 this.StopVideoSaver();
                 this.StopAudioSaver();
                 this.StopBodySaver();
+                this.StopRFIDSaver();
+            }
 
-                DialogResult result = MessageBox.Show(
-                    "已停止录制",
-                    "确认",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-            }
-            else
-            {
-                DialogResult result = MessageBox.Show(
-                    "未进行录制",
-                    "确认",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-            }
+            this.IsRecording=!this.IsRecording;
+            this.startButton.Text = this.IsRecording ? "Stop" : "Start";
+
+            string info=this.IsRecording ? "已开始录制" : "已停止录制";
+            DialogResult result = MessageBox.Show(
+                info,
+                "确认",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         /// <summary>
@@ -178,38 +210,32 @@ namespace KinectApp
             }
         }
 
-        private void HandleBodyFrame(Microsoft.Kinect.Body[] bodies)
+        /// <summary>
+        /// 处理骨骼数据帧
+        /// </summary>
+        /// <param name="filteredBodies"></param>
+        private void HandleBodyFrame(List<FilteredBody> filteredBodies)
         {
-
-            var headJoint = bodies[0].Joints[JointType.Head];
-
-            //// 创建位图（如果尚未创建）
-            //if (pictureBox.Image == null)
-            //{
-            //    pictureBox.Image = new Bitmap(pictureBox.Width, pictureBox.Height);
-            //}
-
-            //using (Graphics g = Graphics.FromImage(pictureBox.Image))
-            //{
-            //    // 清除之前的绘制
-            //    g.Clear(Color.Black);
-
-            //    // 绘制红色圆点（头部位置）
-            //    int radius = 10;
-            //    Rectangle rect = new Rectangle(
-            //        (int)(colorPoint.X - radius),
-            //        (int)(colorPoint.Y - radius),
-            //        radius * 2,
-            //        radius * 2
-            //    );
-
-            //    g.FillEllipse(Brushes.Red, rect);
-            //}
-
-            //// 刷新 PictureBox
-            //pictureBox.Refresh();
+            
         }
 
-
+        /// <summary>
+        /// 处理 RFID 数据帧
+        /// </summary>
+        private void HandleRFIDFrame(List<SimpleTagData> dataList)
+        {
+            foreach (SimpleTagData data in dataList)
+            {
+                if (listView.InvokeRequired)
+                {
+                    this.listView.Invoke(new Action(() => this.listView.Items.Add(data.ToString())));
+                }
+                else
+                {
+                    this.listView.Items.Add(data.ToString());
+                }
+            }
+            MessageBox.Show("Tag Data Received");
+        }
     }
 }
